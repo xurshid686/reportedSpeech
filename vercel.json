@@ -6,7 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "index.html",
+      "src": "*.html",
       "use": "@vercel/static"
     }
   ],
@@ -17,8 +17,12 @@
     },
     {
       "src": "/api/submit",
-      "dest": "/api/submit.js",
-      "methods": ["POST"]
+      "methods": ["POST"],
+      "dest": "/api/submit.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
