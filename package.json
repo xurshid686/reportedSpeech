@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Reported Speech Test with Telegram Integration",
   "scripts": {
-    "dev": "node api/test.js"
+    "dev": "node api/submit.js"
   },
   "dependencies": {
     "node-fetch": "^3.3.2"
