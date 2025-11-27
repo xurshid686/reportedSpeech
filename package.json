@@ -1,0 +1,14 @@
+{
+  "name": "reported-speech-test",
+  "version": "1.0.0",
+  "description": "Reported Speech Test with Telegram Integration",
+  "scripts": {
+    "dev": "node api/test.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
