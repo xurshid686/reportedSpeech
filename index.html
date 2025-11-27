@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reported Speech Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .test-section {
+            display: none;
+        }
+
+        .question {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #f3f4f6;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .question-number {
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .question-text {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            border-color: #4f46e5;
+            background: #f8faff;
+        }
+
+        .option.selected {
+            border-color: #4f46e5;
+            background: #4f46e5;
+            color: white;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8faff;
+            border-radius: 8px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .results {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #4f46e5;
+            margin: 20px 0;
+        }
+
+        .detailed-results {
+            text-align: left;
+            margin-top: 30px;
+        }
+
+        .result-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f8faff;
+        }
+
+        .correct {
+            border-left: 4px solid #10b981;
+        }
+
+        .incorrect {
+            border-left: 4px solid #ef4444;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Reported Speech Test</h1>
+            <p>Test your knowledge of English reported speech with 20 multiple-choice questions</p>
+        </div>
+
+        <div class="content">
+            <!-- Student Info Section -->
+            <div id="studentInfoSection">
+                <div class="form-group">
+                    <label for="studentName">Enter Your Full Name:</label>
+                    <input type="text" id="studentName" placeholder="e.g., John Smith" required>
+                </div>
+                <button class="btn" onclick="startTest()">Start Test</button>
+            </div>
+
+            <!-- Test Section -->
+            <div id="testSection" class="test-section">
+                <div class="timer" id="timer">Time: 00:00</div>
+                
+                <div id="questionsContainer">
+                    <!-- Questions will be dynamically inserted here -->
+                </div>
+
+                <div class="navigation">
+                    <button class="btn" onclick="previousQuestion()" id="prevBtn" disabled>Previous</button>
+                    <button class="btn" onclick="nextQuestion()" id="nextBtn">Next Question</button>
+                    <button class="btn" onclick="submitTest()" id="submitBtn" style="display: none;">Submit Test</button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="test-section">
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Submitting your results and sending reports...</p>
+                </div>
+                <div class="results" id="resultsContent">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test data - the 20 questions from your test
+        const questions = [
+            {
+                question: "John said that he ________ English.",
+                options: [
+                    "is learning",
+                    "learned", 
+                    "was learning",
+                    "has been learning"
+                ],
+                correct: 2,
+                directSpeech: '"I am learning English," John said.'
+            },
+            {
+                question: "They promised that they would see me ________.",
+                options: [
+                    "yesterday",
+                    "the day before",
+                    "tomorrow", 
+                    "the next day"
+                ],
+                correct: 3,
+                directSpeech: '"We will see you tomorrow," they promised.'
+            },
+            {
+                question: "She told me that she ________ her homework.",
+                options: [
+                    "finished",
+                    "had finished",
+                    "has finished",
+                    "was finishing"
+                ],
+                correct: 1,
+                directSpeech: '"I have finished my homework," she told me.'
+            },
+            {
+                question: "He observed that it ________ outside.",
+                options: [
+                    "was raining",
+                    "is raining",
+                    "rained",
+                    "had been raining"
+                ],
+                correct: 0,
+                directSpeech: '"It is raining outside," he observed.'
+            },
+            {
+                question: "Peter said that he had bought a new car ________.",
+                options: [
+                    "next week",
+                    "the week before",
+                    "last week",
+                    "the previous week"
+                ],
+                correct: 3,
+                directSpeech: '"I bought a new car last week," Peter said.'
+            },
+            {
+                question: "The teacher said that we ________ be quiet in the library.",
+                options: [
+                    "must",
+                    "have to",
+                    "had to",
+                    "were to"
+                ],
+                correct: 2,
+                directSpeech: '"You must be quiet in the library," the teacher said.'
+            },
+            {
+                question: "She asked what time the train ________.",
+                options: [
+                    "leaves",
+                    "left",
+                    "was leaving",
+                    "had left"
+                ],
+                correct: 1,
+                directSpeech: '"What time does the train leave?" she asked.'
+            },
+            {
+                question: "He explained that he ________ come to the party.",
+                options: [
+                    "can't",
+                    "couldn't",
+                    "wouldn't",
+                    "didn't"
+                ],
+                correct: 1,
+                directSpeech: '"I can'\''t come to the party," he explained.'
+            },
+            {
+                question: "The electrician warned us ________ that wire.",
+                options: [
+                    "to not touch",
+                    "not to touch",
+                    "don't touch",
+                    "didn't touch"
+                ],
+                correct: 1,
+                directSpeech: '"Don'\''t touch that wire!" the electrician warned us.'
+            },
+            {
+                question: "She said that she ________ TV when I had called.",
+                options: [
+                    "watched",
+                    "was watching",
+                    "had been watching",
+                    "has been watching"
+                ],
+                correct: 2,
+                directSpeech: '"I was watching TV when you called," she said.'
+            },
+            {
+                question: "They mentioned that they ________ be late.",
+                options: [
+                    "may",
+                    "might",
+                    "can",
+                    "will"
+                ],
+                correct: 1,
+                directSpeech: '"We may be late," they mentioned.'
+            },
+            {
+                question: "He asked me where I ________ the previous summer.",
+                options: [
+                    "went",
+                    "had gone",
+                    "have gone",
+                    "go"
+                ],
+                correct: 1,
+                directSpeech: '"Where did you go last summer?" he asked me.'
+            },
+            {
+                question: "My sister said that she ________ the computer later.",
+                options: [
+                    "will be using",
+                    "would be using",
+                    "is using",
+                    "was using"
+                ],
+                correct: 1,
+                directSpeech: '"I'\''ll be using the computer later," my sister said.'
+            },
+            {
+                question: "She exclaimed that ________ the best cake she had ever tasted.",
+                options: [
+                    "this was",
+                    "that is",
+                    "that was",
+                    "it is"
+                ],
+                correct: 2,
+                directSpeech: '"This is the best cake I'\''ve ever tasted," she exclaimed.'
+            },
+            {
+                question: "He asked her ________ feeling okay.",
+                options: [
+                    "if you are",
+                    "whether was she",
+                    "if she was",
+                    "that she was"
+                ],
+                correct: 2,
+                directSpeech: '"Are you feeling okay?" he asked her.'
+            },
+            {
+                question: "He said that they ________ there for years.",
+                options: [
+                    "have been living",
+                    "had been living",
+                    "lived",
+                    "were living"
+                ],
+                correct: 1,
+                directSpeech: '"They have been living here for years," he said.'
+            },
+            {
+                question: "She promised that she ________ tell anyone my secret.",
+                options: [
+                    "won't",
+                    "wouldn't",
+                    "doesn't",
+                    "didn't"
+                ],
+                correct: 1,
+                directSpeech: '"I won'\''t tell anyone your secret," she promised.'
+            },
+            {
+                question: "He reminded us that the meeting ________ at 9 PM.",
+                options: [
+                    "starts",
+                    "started",
+                    "had started",
+                    "has started"
+                ],
+                correct: 1,
+                directSpeech: '"The meeting starts at 9 PM," he reminded us.'
+            },
+            {
+                question: "He thought that he ________ check the weather forecast.",
+                options: [
+                    "should",
+                    "ought",
+                    "would",
+                    "had to"
+                ],
+                correct: 0,
+                directSpeech: '"I should check the weather forecast," he thought.'
+            },
+            {
+                question: "The officer commanded the soldier ________.",
+                options: [
+                    "to come here",
+                    "that he came here",
+                    "to come there",
+                    "come there"
+                ],
+                correct: 2,
+                directSpeech: '"Come here!" the officer commanded the soldier.'
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = new Array(questions.length).fill(null);
+        let startTime;
+        let timerInterval;
+
+        function startTest() {
+            const studentName = document.getElementById('studentName').value.trim();
+            if (!studentName) {
+                alert('Please enter your name');
+                return;
+            }
+
+            document.getElementById('studentInfoSection').style.display = 'none';
+            document.getElementById('testSection').style.display = 'block';
+            
+            startTime = new Date();
+            startTimer();
+            displayQuestion();
+        }
+
+        function startTimer() {
+            let seconds = 0;
+            timerInterval = setInterval(() => {
+                seconds++;
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                document.getElementById('timer').textContent = 
+                    `Time: ${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function displayQuestion() {
+            const container = document.getElementById('questionsContainer');
+            const question = questions[currentQuestion];
+            
+            container.innerHTML = `
+                <div class="question">
+                    <div class="question-number">Question ${currentQuestion + 1} of ${questions.length}</div>
+                    <div class="question-text">
+                        <strong>Direct Speech:</strong> ${question.directSpeech}<br><br>
+                        <strong>Reported Speech:</strong> ${question.question}
+                    </div>
+                    <div class="options">
+                        ${question.options.map((option, index) => `
+                            <div class="option ${answers[currentQuestion] === index ? 'selected' : ''}" 
+                                 onclick="selectOption(${index})">
+                                ${String.fromCharCode(65 + index)}) ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            updateNavigationButtons();
+        }
+
+        function selectOption(optionIndex) {
+            answers[currentQuestion] = optionIndex;
+            displayQuestion();
+        }
+
+        function updateNavigationButtons() {
+            document.getElementById('prevBtn').disabled = currentQuestion === 0;
+            document.getElementById('nextBtn').style.display = currentQuestion === questions.length - 1 ? 'none' : 'block';
+            document.getElementById('submitBtn').style.display = currentQuestion === questions.length - 1 ? 'block' : 'none';
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                displayQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                displayQuestion();
+            }
+        }
+
+        async function submitTest() {
+            clearInterval(timerInterval);
+            const endTime = new Date();
+            const timeSpent = Math.floor((endTime - startTime) / 1000);
+            
+            document.getElementById('testSection').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'block';
+
+            // Calculate score
+            let correctAnswers = 0;
+            const results = questions.map((question, index) => {
+                const isCorrect = answers[index] === question.correct;
+                if (isCorrect) correctAnswers++;
+                return {
+                    question: question.question,
+                    directSpeech: question.directSpeech,
+                    userAnswer: question.options[answers[index]],
+                    correctAnswer: question.options[question.correct],
+                    isCorrect: isCorrect
+                };
+            });
+
+            const score = Math.round((correctAnswers / questions.length) * 100);
+            const studentName = document.getElementById('studentName').value.trim();
+
+            // Prepare data for submission
+            const testData = {
+                studentName: studentName,
+                timeSpent: timeSpent,
+                score: score,
+                correctAnswers: correctAnswers,
+                totalQuestions: questions.length,
+                answers: results,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                // Send results to Telegram
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                if (response.ok) {
+                    displayResults(testData);
+                } else {
+                    throw new Error('Failed to submit results');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Still show results even if Telegram fails
+                displayResults(testData);
+                alert('Results saved locally, but failed to send to Telegram. Please check your connection.');
+            }
+        }
+
+        function displayResults(testData) {
+            document.getElementById('loading').style.display = 'none';
+            
+            const resultsHTML = `
+                <h2>Test Completed! 🎉</h2>
+                <p>Thank you, <strong>${testData.studentName}</strong>!</p>
+                <div class="score">${testData.score}%</div>
+                <p>You got <strong>${testData.correctAnswers}</strong> out of <strong>${testData.totalQuestions}</strong> questions correct</p>
+                <p>Time spent: <strong>${Math.floor(testData.timeSpent / 60)}:${(testData.timeSpent % 60).toString().padStart(2, '0')}</strong></p>
+                
+                <div class="detailed-results">
+                    <h3>Detailed Results:</h3>
+                    ${testData.answers.map((result, index) => `
+                        <div class="result-item ${result.isCorrect ? 'correct' : 'incorrect'}">
+                            <strong>Question ${index + 1}:</strong><br>
+                            <em>Direct:</em> ${result.directSpeech}<br>
+                            <em>Reported:</em> ${result.question}<br>
+                            <strong>Your answer:</strong> ${result.userAnswer || 'Not answered'}<br>
+                            <strong>Correct answer:</strong> ${result.correctAnswer}<br>
+                            <strong>Status:</strong> ${result.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <button class="btn" onclick="location.reload()" style="margin-top: 20px;">Take Test Again</button>
+            `;
+            
+            document.getElementById('resultsContent').innerHTML = resultsHTML;
+        }
+    </script>
+</body>
+</html>
