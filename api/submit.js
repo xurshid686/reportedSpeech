@@ -1,11 +1,18 @@
 const fetch = require('node-fetch');
 
-// Telegram Bot Configuration - REPLACE WITH YOUR ACTUAL TOKENS AND CHAT IDs
-const BOT_TOKEN = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN_HERE';
-const PRIVATE_CHAT_ID = process.env.PRIVATE_CHAT_ID || 'YOUR_PRIVATE_CHAT_ID';
-const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID || 'YOUR_GROUP_CHAT_ID';
-
 module.exports = async (req, res) => {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+    // Handle OPTIONS request for CORS
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -13,13 +20,25 @@ module.exports = async (req, res) => {
     try {
         const testData = req.body;
 
+        // Telegram Bot Configuration - USE ENVIRONMENT VARIABLES
+        const BOT_TOKEN = process.env.BOT_TOKEN;
+        const PRIVATE_CHAT_ID = process.env.PRIVATE_CHAT_ID;
+        const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
+
+        if (!BOT_TOKEN || !PRIVATE_CHAT_ID || !GROUP_CHAT_ID) {
+            console.error('Missing environment variables');
+            return res.status(500).json({ 
+                error: 'Server configuration error: Missing Telegram credentials' 
+            });
+        }
+
         // Send detailed report to private chat
         const privateMessage = createPrivateReport(testData);
-        await sendTelegramMessage(PRIVATE_CHAT_ID, privateMessage);
+        await sendTelegramMessage(BOT_TOKEN, PRIVATE_CHAT_ID, privateMessage);
 
         // Send short report to group chat
         const groupMessage = createGroupReport(testData);
-        await sendTelegramMessage(GROUP_CHAT_ID, groupMessage);
+        await sendTelegramMessage(BOT_TOKEN, GROUP_CHAT_ID, groupMessage);
 
         res.status(200).json({ 
             success: true, 
@@ -29,31 +48,78 @@ module.exports = async (req, res) => {
         console.error('Error:', error);
         res.status(500).json({ 
             success: false, 
-            error: 'Failed to submit results' 
+            error: 'Failed to submit results: ' + error.message 
         });
     }
 };
 
-async function sendTelegramMessage(chatId, message) {
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+async function sendTelegramMessage(botToken, chatId, message) {
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
     
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            chat_id: chatId,
-            text: message,
-            parse_mode: 'HTML'
-        })
-    });
+    // Telegram has a message limit of 4096 characters, so we need to split long messages
+    const messageParts = splitMessage(message);
+    
+    for (const part of messageParts) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: part,
+                parse_mode: 'HTML'
+            })
+        });
 
-    if (!response.ok) {
-        throw new Error(`Telegram API error: ${response.status}`);
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`Telegram API error: ${result.description || response.status}`);
+        }
+
+        // Add small delay between messages to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+
+function splitMessage(message, maxLength = 4096) {
+    if (message.length <= maxLength) {
+        return [message];
     }
 
-    return response.json();
+    const parts = [];
+    const lines = message.split('\n');
+    let currentPart = '';
+
+    for (const line of lines) {
+        if (currentPart.length + line.length + 1 > maxLength) {
+            if (currentPart) {
+                parts.push(currentPart);
+                currentPart = line;
+            } else {
+                // Single line is too long, split by words
+                const words = line.split(' ');
+                currentPart = '';
+                for (const word of words) {
+                    if (currentPart.length + word.length + 1 > maxLength) {
+                        parts.push(currentPart);
+                        currentPart = word;
+                    } else {
+                        currentPart += (currentPart ? ' ' : '') + word;
+                    }
+                }
+            }
+        } else {
+            currentPart += (currentPart ? '\n' : '') + line;
+        }
+    }
+
+    if (currentPart) {
+        parts.push(currentPart);
+    }
+
+    return parts;
 }
 
 function createPrivateReport(testData) {
