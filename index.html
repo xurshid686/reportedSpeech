@@ -612,10 +612,12 @@
                     body: JSON.stringify(testData)
                 });
 
+                const result = await response.json();
+                
                 if (response.ok) {
                     displayResults(testData);
                 } else {
-                    throw new Error('Failed to submit results');
+                    throw new Error(result.error || 'Failed to submit results');
                 }
             } catch (error) {
                 console.error('Error:', error);
